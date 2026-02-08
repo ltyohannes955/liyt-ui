@@ -19,7 +19,7 @@ export const apiSlice = createApi({
     tagTypes: ['Example'], // Add your tag types here
     endpoints: (builder) => ({
         // Example endpoint - replace with your actual endpoints
-        getExample: builder.query<any, void>({
+        getExample: builder.query<unknown, void>({
             query: () => '/example',
             providesTags: ['Example'],
         }),
