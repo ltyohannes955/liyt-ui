@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Smartphone, Shield, Zap, ChevronRight, Star } from "lucide-react";
+import { Smartphone, Shield, Zap, Star } from "lucide-react";
 import Image from "next/image";
 
 export default function DownloadAppPage() {
