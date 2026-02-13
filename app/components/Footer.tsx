@@ -13,11 +13,11 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#E4FF2C] px-8 pb-12 w-full">
-      <div className="w-full max-w-[90%] mx-auto">
+      <div className="w-full max-w-[80%] mx-auto">
         {/* Let's Talk Header */}
         <div className="flex items-center justify-between mb-16 py-12">
           <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-black">
-            LET&apos;S<br />TALK
+            Let&apos;s<br />Talk
           </h2>
           <div className="w-32 h-32 md:w-40 md:h-40">
             <Image

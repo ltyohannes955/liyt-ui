@@ -23,7 +23,7 @@ export default function Home() {
         {/* Content */}
         <div className="relative z-10 text-center w-full px-4 pt-28">
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-8 tracking-tight">
-            THE <span className="text-[#E4FF2C]">LIYT</span> WAY
+            The <span className="text-[#E4FF2C]">liyt</span> way
           </h1>
           <p className="text-xl md:text-2xl text-white/80 mb-10 w-full">
             Payy is a stablecoin-native banking platform with unrivaled privacy.
@@ -68,16 +68,16 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/30" />
           <div className="relative z-10 text-center w-full">
             <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6">
-              GET IT
+              Get it
             </h2>
             <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-[#E4FF2C] mb-8">
-              DELIVERD
+              Deliverd
             </h2>
             <p className="text-white/80 text-lg md:text-xl mb-10 max-w-md mx-auto">
               Premium, reliable service at your fingertips. From across town to your doorstep
             </p>
             <button className="group flex items-center gap-3 bg-[#E4FF2C] text-black py-4 px-8 rounded-full font-bold text-base hover:bg-[#d4ef1c] transition-colors mx-auto">
-              BOOK NOW
+              Book now
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
@@ -90,10 +90,10 @@ export default function Home() {
         <div className="relative min-h-[90vh] w-full flex flex-col items-center justify-center p-12 bg-[#0a0a0a]">
           <div className="text-center w-full">
             <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6">
-              DRIVE &
+              Drive and
             </h2>
             <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-[#E4FF2C] mb-8">
-              EARN
+              Earn
             </h2>
             <p className="text-white/80 text-lg md:text-xl mb-10 max-w-md mx-auto">
               Set your own schedule. Be your own boss. Earn more on every trip you make
@@ -116,10 +116,10 @@ export default function Home() {
           <div className="w-full md:w-auto md:ml-[5%]">
             <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">01</span>
             <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-3">
-              REAL-TIME
+              Real-time
             </h3>
             <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-[#E4FF2C] mb-6">
-              TRACKING
+              Tracking
             </h3>
             <p className="text-white/70 text-lg md:text-xl max-w-lg">
               GPS precision that keeps you informed every second of the journey No more guessing
@@ -130,10 +130,10 @@ export default function Home() {
           <div className="mt-24 md:mt-32 w-full md:w-auto md:mx-auto md:text-center">
             <span className="text-[#E4FF2C] text-lg font-medium mb-4 block md:text-center">02</span>
             <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-[#E4FF2C] mb-3">
-              SECURE
+              Secure
             </h3>
             <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6">
-              PAYMENTS
+              Payments
             </h3>
             <p className="text-white/70 text-lg md:text-xl max-w-lg md:mx-auto">
               Encrypted one-tap payments with all major providers and digital wallets
@@ -147,7 +147,7 @@ export default function Home() {
               24/7
             </h3>
             <h3 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6">
-              SUPPORT
+              Support
             </h3>
             <p className="text-white/70 text-lg md:text-xl max-w-lg md:ml-auto">
               Our dedicated team is always online to ensure your experience is flawless FAST
@@ -160,7 +160,7 @@ export default function Home() {
       <section id="download" className="bg-[#E4FF2C] py-32 px-8 w-full">
         <div className="w-full">
           <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-black text-center mb-16">
-            GET THE APP
+            Get the app
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center w-full">
