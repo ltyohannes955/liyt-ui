@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Television Sans Font */
+@font-face {
+  font-family: 'Television Sans';
+  src: url('/fonts/TelevisionSansVF.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   --primary: #E4FF2C;
   --primary-foreground: #0a0a0a;
@@ -32,7 +40,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-dark: var(--primary-dark);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Television Sans', Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -55,10 +63,10 @@
 }
 
 body {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  background: var(--background);
-  color: var(--foreground);
-}
+    font-family: 'Television Sans', Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+  }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

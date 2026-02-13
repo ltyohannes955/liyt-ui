@@ -1,19 +1,57 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DashboardLayout } from './components/DashboardLayout';
 import { StatsCard } from './components/StatsCard';
 import { ShoppingCart, Clock, CheckCircle, Rocket } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAppSelector, useAppDispatch } from '@/lib/hooks';
+import { initializeAuth, fetchCurrentUser } from '@/lib/features/auth/authSlice';
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { user, business, isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    // Initialize auth state
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
+  useEffect(() => {
+    // Check authentication after initialization
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
+    // Fetch current user data if authenticated
+    if (isAuthenticated && !user) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [isAuthenticated, user, dispatch]);
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#E4FF2C] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-white/50 mt-1">Welcome back to your logistics dashboard</p>
+          <p className="text-white/50 mt-1">
+            Welcome back{business?.name ? ` to ${business.name}` : ''}
+            {user?.email ? `, ${user.email.split('@')[0]}` : ''}
+          </p>
         </div>
 
         {/* Stats Grid */}

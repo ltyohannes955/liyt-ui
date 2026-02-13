@@ -40,15 +40,15 @@ export default function AboutPage() {
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#E4FF2C]/5 rounded-full blur-3xl" />
         </div>
-        
+
         <div className="relative z-10 max-w-5xl mx-auto">
-          <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">ABOUT US</span>
+          <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">About Us</span>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8">
-            REVOLUTIONIZING<br />
-            <span className="text-[#E4FF2C]">DELIVERY</span>
+            Revolutionizing<br />
+            <span className="text-[#E4FF2C]">Delivery</span>
           </h1>
           <p className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto">
-            LIYT is more than just a delivery platform. We&apos;re building the future 
+            Liyt is more than just a delivery platform. We&apos;re building the future
             of logistics in Africa, connecting people and businesses seamlessly.
           </p>
         </div>
@@ -70,15 +70,15 @@ export default function AboutPage() {
       <section className="py-32 px-8">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
-            <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">OUR MISSION</span>
+            <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">Our Mission</span>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-              EMPOWERING<br />
-              <span className="text-[#E4FF2C]">COMMUNITIES</span>
+              Empowering<br />
+              <span className="text-[#E4FF2C]">Communities</span>
             </h2>
             <p className="text-white/70 text-lg leading-relaxed">
-              We believe in creating opportunities for everyone. Our platform connects 
-              drivers with customers, creating a thriving ecosystem that benefits 
-              the entire community. Whether you&apos;re looking to earn extra income 
+              We believe in creating opportunities for everyone. Our platform connects
+              drivers with customers, creating a thriving ecosystem that benefits
+              the entire community. Whether you&apos;re looking to earn extra income
               or need reliable delivery services, LIYT has you covered.
             </p>
           </div>
@@ -101,12 +101,12 @@ export default function AboutPage() {
       <section className="py-32 px-8 bg-[#0a0a0a]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">OUR VALUES</span>
+            <span className="text-[#E4FF2C] text-lg font-medium mb-4 block">Our Values</span>
             <h2 className="text-4xl md:text-5xl font-black text-white">
-              WHAT DRIVES <span className="text-[#E4FF2C]">US</span>
+              What Drives <span className="text-[#E4FF2C]">Us</span>
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((value, index) => (
               <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:border-[#E4FF2C]/50 transition-colors">

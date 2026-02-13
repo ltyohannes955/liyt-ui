@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Settings, ArrowLeft, Menu } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { LayoutDashboard, Package, Settings, ArrowLeft, Menu, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/lib/hooks';
+import { logoutUser } from '@/lib/features/auth/authSlice';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -20,6 +23,17 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { user, business } = useAppSelector((state) => state.auth);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await dispatch(logoutUser());
+    setIsLoggingOut(false);
+    router.push('/login');
+  };
 
   return (
     <>
@@ -52,6 +66,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </Link>
         </div>
 
+        {/* User Info */}
+        {(user || business) && (
+          <div className="px-4 pb-4">
+            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+              <div className="w-10 h-10 bg-[#E4FF2C]/20 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-[#E4FF2C]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {business?.name && (
+                  <p className="text-white font-medium text-sm truncate">{business.name}</p>
+                )}
+                {user?.email && (
+                  <p className="text-white/50 text-xs truncate">{user.email}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="flex-1 px-4 py-4">
           <ul className="space-y-1">
@@ -79,7 +112,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 space-y-2">
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex items-center gap-3 px-4 py-3 text-white/50 hover:text-red-400 transition-colors text-sm w-full rounded-lg hover:bg-white/5"
+          >
+            {isLoggingOut ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <LogOut className="w-5 h-5" />
+            )}
+            Logout
+          </button>
           <Link
             href="/"
             onClick={onClose}
