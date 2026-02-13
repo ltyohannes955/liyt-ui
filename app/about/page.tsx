@@ -65,7 +65,6 @@ export default function AboutPage() {
           ))}
         </div>
       </section>
-
       {/* Mission Section */}
       <section className="py-32 px-8">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
