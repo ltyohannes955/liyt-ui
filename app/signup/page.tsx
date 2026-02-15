@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, Building2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, Building2, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ export default function SignupPage() {
     fullName: "",
     email: "",
     company: "",
+    supportEmail: "",
     password: "",
     confirmPassword: "",
     agreeTerms: false,
@@ -62,6 +63,7 @@ export default function SignupPage() {
       email: formData.email,
       password: formData.password,
       businessName: formData.company,
+      supportEmail: formData.supportEmail,
     }));
 
     if (registerUser.fulfilled.match(result)) {
@@ -77,7 +79,7 @@ export default function SignupPage() {
         <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-[#E4FF2C]/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-xl">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
@@ -106,27 +108,6 @@ export default function SignupPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Full Name - Kept in UI but optional (not sent to backend yet) */}
-            <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-white">
-                Full Name <span className="text-white/30">(Optional)</span>
-              </Label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="John Doe"
-                  value={formData.fullName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
-                  }
-                  disabled={isLoading}
-                  className="pl-12 bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 h-12 focus:border-[#E4FF2C] focus:ring-[#E4FF2C]"
-                />
-              </div>
-            </div>
-
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white">
@@ -149,25 +130,49 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* Company/Business - Required by backend */}
-            <div className="space-y-2">
-              <Label htmlFor="company" className="text-white">
-                Company / Business Name <span className="text-red-400">*</span>
-              </Label>
-              <div className="relative">
-                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                <Input
-                  id="company"
-                  type="text"
-                  placeholder="Your business name"
-                  value={formData.company}
-                  onChange={(e) =>
-                    setFormData({ ...formData, company: e.target.value })
-                  }
-                  required
-                  disabled={isLoading}
-                  className="pl-12 bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 h-12 focus:border-[#E4FF2C] focus:ring-[#E4FF2C]"
-                />
+            {/* Company/Business and Support Email - Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Company/Business - Required by backend */}
+              <div className="space-y-2">
+                <Label htmlFor="company" className="text-white">
+                  Business Name <span className="text-red-400">*</span>
+                </Label>
+                <div className="relative">
+                  <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <Input
+                    id="company"
+                    type="text"
+                    placeholder="Your business name"
+                    value={formData.company}
+                    onChange={(e) =>
+                      setFormData({ ...formData, company: e.target.value })
+                    }
+                    required
+                    disabled={isLoading}
+                    className="pl-12 bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 h-12 focus:border-[#E4FF2C] focus:ring-[#E4FF2C]"
+                  />
+                </div>
+              </div>
+
+              {/* Support Email - Optional */}
+              <div className="space-y-2">
+                <Label htmlFor="supportEmail" className="text-white">
+                  Support Email <span className="text-white/30">(Optional)</span>
+                </Label>
+                <div className="relative">
+                  <Headphones className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <Input
+                    id="supportEmail"
+                    type="email"
+                    placeholder="support@company.com"
+                    value={formData.supportEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, supportEmail: e.target.value })
+                    }
+                    disabled={isLoading}
+                    className="pl-12 bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 h-12 focus:border-[#E4FF2C] focus:ring-[#E4FF2C]"
+                  />
+                </div>
               </div>
             </div>
 
