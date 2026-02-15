@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,97 +19,185 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Package, MapPin, User, Truck } from 'lucide-react';
+import { Plus, Package, Truck, Trash2, Send } from 'lucide-react';
+import { useAppSelector } from '@/lib/hooks';
+import { toast } from 'sonner';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+interface BusinessLocation {
+  id: number;
+  name: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  region?: string;
+  postal_code?: string;
+  country_code: string;
+  latitude?: string;
+  longitude?: string;
+  instructions?: string;
+  active: boolean;
+}
+
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+}
 
 interface CreateOrderModalProps {
   onOrderCreated?: () => void;
 }
 
-const statusOptions = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'in-transit', label: 'In Transit' },
-  { value: 'completed', label: 'Completed' },
-];
-
-// Ethiopia - Addis Ababa locations
-const ethiopiaLocations = [
-  'Bole International Airport',
-  'Meskel Square',
-  'Addis Ababa University',
-  'National Palace',
-  'African Union HQ',
-  'Unity Park',
-  'Holy Trinity Cathedral',
-  'St. George Cathedral',
-  'Merkato Market',
-  'Ethiopian National Museum',
-  'Red Terror Martyrs Memorial',
-  'Friendship Park',
-  'Bole Medhanealem',
-  'Kazanchis',
-  'Piazza',
-  'Sarbet',
-  'Ayat',
-  'CMC',
-  'Megenagna',
-  'Sheraton Addis',
-  'Hilton Addis Ababa',
-  'Jupiter Hotel',
-  'Edna Mall',
-  'Century Mall',
-];
-
 export function CreateOrderModal({ onOrderCreated }: CreateOrderModalProps) {
+  const { accessToken } = useAppSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locations, setLocations] = useState<BusinessLocation[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(true);
+  
   const [formData, setFormData] = useState({
-    itemName: '',
-    itemDescription: '',
-    weight: '',
-    dimensions: '',
-    pickupLocation: '',
+    recipientEmail: '',
+    description: '',
+    price: '',
+    selectedLocationId: '',
     pickupContactName: '',
     pickupContactPhone: '',
-    pickupContactEmail: '',
-    dropoffLocation: '',
-    dropoffContactName: '',
-    dropoffContactPhone: '',
-    dropoffContactEmail: '',
-    specialInstructions: '',
-    status: 'pending',
+    instructions: '',
   });
+
+  const [items, setItems] = useState<OrderItem[]>([
+    { id: '1', name: '', quantity: 1 }
+  ]);
+
+  // Fetch business locations
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!accessToken) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/business_locations`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setLocations(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch locations:', error);
+        toast.error('Error', { description: 'Failed to load business locations' });
+      } finally {
+        setLoadingLocations(false);
+      }
+    };
+
+    if (open) {
+      fetchLocations();
+    }
+  }, [open, accessToken]);
+
+  const handleAddItem = () => {
+    setItems([...items, { id: Date.now().toString(), name: '', quantity: 1 }]);
+  };
+
+  const handleRemoveItem = (id: string) => {
+    if (items.length > 1) {
+      setItems(items.filter(item => item.id !== id));
+    }
+  };
+
+  const handleItemChange = (id: string, field: 'name' | 'quantity', value: string | number) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!accessToken) {
+      toast.error('Error', { description: 'Please log in to create an order' });
+      return;
+    }
+
+    // Validate items
+    const validItems = items.filter(item => item.name.trim() !== '');
+    if (validItems.length === 0) {
+      toast.error('Error', { description: 'Please add at least one item' });
+      return;
+    }
+
+    // Get selected location
+    const selectedLocation = locations.find(loc => loc.id.toString() === formData.selectedLocationId);
+    if (!selectedLocation) {
+      toast.error('Error', { description: 'Please select a pickup location' });
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch(`${API_BASE_URL}/deliveries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          description: formData.description || undefined,
+          price: formData.price ? parseFloat(formData.price) : undefined,
+          recipient_email: formData.recipientEmail,
+          pickup: {
+            address1: selectedLocation.address1 || selectedLocation.name,
+            address2: selectedLocation.address2,
+            city: selectedLocation.city || 'Addis Ababa',
+            region: selectedLocation.region || 'Addis Ababa',
+            postal_code: selectedLocation.postal_code,
+            country_code: selectedLocation.country_code,
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+            contact_name: formData.pickupContactName,
+            contact_phone: formData.pickupContactPhone,
+            instructions: formData.instructions || undefined,
+          },
+          items: validItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+          })),
+        }),
+      });
 
-    // Reset form and close modal
-    setFormData({
-      itemName: '',
-      itemDescription: '',
-      weight: '',
-      dimensions: '',
-      pickupLocation: '',
-      pickupContactName: '',
-      pickupContactPhone: '',
-      pickupContactEmail: '',
-      dropoffLocation: '',
-      dropoffContactName: '',
-      dropoffContactPhone: '',
-      dropoffContactEmail: '',
-      specialInstructions: '',
-      status: 'pending',
-    });
-    setIsSubmitting(false);
-    setOpen(false);
-    onOrderCreated?.();
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+      if (response.ok) {
+        toast.success('Order created', { description: 'Your order has been created successfully. The recipient will receive a confirmation email.' });
+        
+        // Reset form
+        setFormData({
+          recipientEmail: '',
+          description: '',
+          price: '',
+          selectedLocationId: '',
+          pickupContactName: '',
+          pickupContactPhone: '',
+          instructions: '',
+        });
+        setItems([{ id: '1', name: '', quantity: 1 }]);
+        
+        setOpen(false);
+        onOrderCreated?.();
+      } else {
+        const errorData = await response.json();
+        toast.error('Failed to create order', { 
+          description: errorData.message || 'Something went wrong' 
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create order:', error);
+      toast.error('Network error', { description: 'Unable to connect to the server' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -129,90 +217,84 @@ export function CreateOrderModal({ onOrderCreated }: CreateOrderModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-8 mt-4">
-          {/* Package Information */}
+          {/* Recipient Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#E4FF2C]" />
-              Package Information
+              <Send className="w-5 h-5 text-[#E4FF2C]" />
+              Recipient Information
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="itemName" className="text-white">
-                  Item Name <span className="text-red-400">*</span>
-                </Label>
-                <Input
-                  id="itemName"
-                  placeholder="e.g., Electronics Pack A"
-                  value={formData.itemName}
-                  onChange={(e) => handleInputChange('itemName', e.target.value)}
-                  required
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-white">
-                  Status
-                </Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleInputChange('status', value)}
-                >
-                  <SelectTrigger className="bg-[#1a1a1a] border-white/10 text-white">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-white/10">
-                    {statusOptions.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value}
-                        className="text-white hover:bg-white/10"
-                      >
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <div className="space-y-2">
-              <Label htmlFor="itemDescription" className="text-white">
-                Item Description
+              <Label htmlFor="recipientEmail" className="text-white">
+                Recipient Email <span className="text-red-400">*</span>
               </Label>
-              <Textarea
-                id="itemDescription"
-                placeholder="Describe the item being shipped..."
-                value={formData.itemDescription}
-                onChange={(e) => handleInputChange('itemDescription', e.target.value)}
-                className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 min-h-[80px]"
+              <Input
+                id="recipientEmail"
+                type="email"
+                placeholder="customer@example.com"
+                value={formData.recipientEmail}
+                onChange={(e) => setFormData({ ...formData, recipientEmail: e.target.value })}
+                required
+                className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
               />
+              <p className="text-white/40 text-xs">
+                The recipient will receive a confirmation email to set their delivery address
+              </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="weight" className="text-white">
-                  Weight (kg)
-                </Label>
-                <Input
-                  id="weight"
-                  type="number"
-                  step="0.1"
-                  placeholder="e.g., 12.5"
-                  value={formData.weight}
-                  onChange={(e) => handleInputChange('weight', e.target.value)}
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dimensions" className="text-white">
-                  Dimensions (L x W x H cm)
-                </Label>
-                <Input
-                  id="dimensions"
-                  placeholder="e.g., 40 x 30 x 25"
-                  value={formData.dimensions}
-                  onChange={(e) => handleInputChange('dimensions', e.target.value)}
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
+          </div>
+
+          {/* Items Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Package className="w-5 h-5 text-[#E4FF2C]" />
+                Items
+              </h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddItem}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Item
+              </Button>
+            </div>
+            
+            <div className="space-y-3">
+              {items.map((item, index) => (
+                <div key={item.id} className="flex items-start gap-3">
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder={`Item ${index + 1} name`}
+                      value={item.name}
+                      onChange={(e) => handleItemChange(item.id, 'name', e.target.value)}
+                      className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
+                    />
+                  </div>
+                  <div className="w-24 space-y-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Qty"
+                      value={item.quantity}
+                      onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                      className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
+                    />
+                  </div>
+                  {items.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -227,26 +309,28 @@ export function CreateOrderModal({ onOrderCreated }: CreateOrderModalProps) {
                 Pickup Location <span className="text-red-400">*</span>
               </Label>
               <Select
-                value={formData.pickupLocation}
-                onValueChange={(value) => handleInputChange('pickupLocation', value)}
+                value={formData.selectedLocationId}
+                onValueChange={(value) => setFormData({ ...formData, selectedLocationId: value })}
+                disabled={loadingLocations}
               >
                 <SelectTrigger className="bg-[#1a1a1a] border-white/10 text-white">
-                  <SelectValue placeholder="Select pickup location in Addis Ababa..." />
+                  <SelectValue placeholder={loadingLocations ? "Loading locations..." : "Select pickup location..."} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a1a] border-white/10 max-h-[300px]">
-                  {ethiopiaLocations.map((location) => (
+                  {locations.map((location) => (
                     <SelectItem
-                      key={location}
-                      value={location}
+                      key={location.id}
+                      value={location.id.toString()}
                       className="text-white hover:bg-white/10"
                     >
-                      {location}
+                      {location.name}
+                      {location.city && ` - ${location.city}`}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pickupContactName" className="text-white">
                   Contact Name
@@ -255,7 +339,7 @@ export function CreateOrderModal({ onOrderCreated }: CreateOrderModalProps) {
                   id="pickupContactName"
                   placeholder="e.g., Abebe Kebede"
                   value={formData.pickupContactName}
-                  onChange={(e) => handleInputChange('pickupContactName', e.target.value)}
+                  onChange={(e) => setFormData({ ...formData, pickupContactName: e.target.value })}
                   className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
                 />
               </div>
@@ -268,114 +352,57 @@ export function CreateOrderModal({ onOrderCreated }: CreateOrderModalProps) {
                   type="tel"
                   placeholder="e.g., +251 911 234 567"
                   value={formData.pickupContactPhone}
-                  onChange={(e) => handleInputChange('pickupContactPhone', e.target.value)}
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pickupContactEmail" className="text-white">
-                  Contact Email
-                </Label>
-                <Input
-                  id="pickupContactEmail"
-                  type="email"
-                  placeholder="e.g., abebe@example.com"
-                  value={formData.pickupContactEmail}
-                  onChange={(e) => handleInputChange('pickupContactEmail', e.target.value)}
+                  onChange={(e) => setFormData({ ...formData, pickupContactPhone: e.target.value })}
                   className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
                 />
               </div>
             </div>
           </div>
 
-          {/* Dropoff Information */}
+          {/* Additional Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-[#E4FF2C]" />
-              Dropoff Information
-            </h3>
-            <div className="space-y-2">
-              <Label htmlFor="dropoffLocation" className="text-white">
-                Dropoff Location <span className="text-red-400">*</span>
-              </Label>
-              <Select
-                value={formData.dropoffLocation}
-                onValueChange={(value) => handleInputChange('dropoffLocation', value)}
-              >
-                <SelectTrigger className="bg-[#1a1a1a] border-white/10 text-white">
-                  <SelectValue placeholder="Select dropoff location in Addis Ababa..." />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-white/10 max-h-[300px]">
-                  {ethiopiaLocations.map((location) => (
-                    <SelectItem
-                      key={location}
-                      value={location}
-                      className="text-white hover:bg-white/10"
-                    >
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="dropoffContactName" className="text-white">
-                  Contact Name
-                </Label>
-                <Input
-                  id="dropoffContactName"
-                  placeholder="e.g., Tigist Haile"
-                  value={formData.dropoffContactName}
-                  onChange={(e) => handleInputChange('dropoffContactName', e.target.value)}
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dropoffContactPhone" className="text-white">
-                  Contact Phone
-                </Label>
-                <Input
-                  id="dropoffContactPhone"
-                  type="tel"
-                  placeholder="e.g., +251 922 345 678"
-                  value={formData.dropoffContactPhone}
-                  onChange={(e) => handleInputChange('dropoffContactPhone', e.target.value)}
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dropoffContactEmail" className="text-white">
-                  Contact Email
-                </Label>
-                <Input
-                  id="dropoffContactEmail"
-                  type="email"
-                  placeholder="e.g., tigist@example.com"
-                  value={formData.dropoffContactEmail}
-                  onChange={(e) => handleInputChange('dropoffContactEmail', e.target.value)}
-                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Special Instructions */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <User className="w-5 h-5 text-[#E4FF2C]" />
+              <Package className="w-5 h-5 text-[#E4FF2C]" />
               Additional Information
             </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-white">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe the delivery..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 min-h-[80px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="instructions" className="text-white">
+                  Pickup Instructions
+                </Label>
+                <Textarea
+                  id="instructions"
+                  placeholder="Special instructions for pickup..."
+                  value={formData.instructions}
+                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                  className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 min-h-[80px]"
+                />
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="specialInstructions" className="text-white">
-                Special Instructions
+              <Label htmlFor="price" className="text-white">
+                Price (ETB)
               </Label>
-              <Textarea
-                id="specialInstructions"
-                placeholder="Any special handling instructions, delivery preferences, etc..."
-                value={formData.specialInstructions}
-                onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
-                className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 min-h-[100px]"
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                className="bg-[#1a1a1a] border-white/10 text-white placeholder:text-white/30 w-48"
               />
             </div>
           </div>

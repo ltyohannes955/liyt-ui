@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import StoreProvider from "@/lib/StoreProvider";
 import { ConditionalLayout } from "./components/ConditionalLayout";
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export const metadata: Metadata = {
   title: "LIYT - The Future of Delivery",
@@ -14,13 +16,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased bg-[#0a0a0a]">
-        <StoreProvider>
-          <ConditionalLayout>
-            {children}
-          </ConditionalLayout>
-        </StoreProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <StoreProvider>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+          </StoreProvider>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#141414',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#fff',
+              },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

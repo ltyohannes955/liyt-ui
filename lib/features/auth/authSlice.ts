@@ -167,21 +167,29 @@ export const registerUser = createAsyncThunk(
   async ({ 
     email, 
     password, 
-    businessName 
+    businessName,
+    supportEmail 
   }: { 
     email: string; 
     password: string; 
     businessName: string;
+    supportEmail?: string;
   }, { rejectWithValue }) => {
     try {
+      const requestBody: { email: string; password: string; business_name: string; support_email?: string } = {
+        email,
+        password,
+        business_name: businessName,
+      };
+      
+      if (supportEmail && supportEmail.trim()) {
+        requestBody.support_email = supportEmail.trim();
+      }
+      
       const response = await fetch(`${API_BASE_URL}/auth/registrations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          business_name: businessName,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -278,9 +286,9 @@ export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { getState, rejectWithValue }) => {
     const state = getState() as { auth: AuthState };
-    const refreshToken = state.auth.refreshToken;
+    const refreshTokenValue = state.auth.refreshToken;
 
-    if (!refreshToken) {
+    if (!refreshTokenValue) {
       return rejectWithValue('No refresh token available');
     }
 
@@ -288,7 +296,7 @@ export const refreshToken = createAsyncThunk(
       const response = await fetch(`${API_BASE_URL}/auth/sessions/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        body: JSON.stringify({ refresh_token: refreshTokenValue }),
       });
 
       if (!response.ok) {
@@ -297,9 +305,10 @@ export const refreshToken = createAsyncThunk(
 
       const data = await response.json();
       
-      // Check if using localStorage or sessionStorage
-      const isRememberMe = localStorage.getItem('access_token') !== null;
-      const storage = isRememberMe ? localStorage : sessionStorage;
+      // Check if using localStorage or sessionStorage based on what's currently stored
+      const hasLocalToken = typeof window !== 'undefined' && localStorage.getItem('access_token') !== null;
+      const hasSessionToken = typeof window !== 'undefined' && sessionStorage.getItem('access_token') !== null;
+      const storage = hasLocalToken ? localStorage : hasSessionToken ? sessionStorage : localStorage;
       
       storage.setItem('access_token', data.access_token);
       storage.setItem('refresh_token', data.refresh_token);

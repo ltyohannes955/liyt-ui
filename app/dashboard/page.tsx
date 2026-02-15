@@ -8,24 +8,16 @@ import { StatsCard } from './components/StatsCard';
 import { ShoppingCart, Clock, CheckCircle, Rocket } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppSelector, useAppDispatch } from '@/lib/hooks';
-import { initializeAuth, fetchCurrentUser } from '@/lib/features/auth/authSlice';
+import { fetchCurrentUser } from '@/lib/features/auth/authSlice';
+import { useAuthCheck } from '@/lib/hooks/useAuthCheck';
 
 export default function DashboardPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, business, isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
-
-  useEffect(() => {
-    // Initialize auth state
-    dispatch(initializeAuth());
-  }, [dispatch]);
-
-  useEffect(() => {
-    // Check authentication after initialization
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
+  const { user, business } = useAppSelector((state) => state.auth);
+  
+  // Use auth check hook - redirects to login if not authenticated
+  const { isAuthenticated, isLoading } = useAuthCheck({ requireAuth: true, redirectTo: '/login' });
 
   useEffect(() => {
     // Fetch current user data if authenticated
